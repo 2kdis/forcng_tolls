@@ -1,6 +1,6 @@
 ## Showcase
 
-Showcase Video : https://streamable.com/ot29x3
+- Showcase Video: https://streamable.com/ot29x3
 
 ## Features
 
