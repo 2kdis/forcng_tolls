@@ -15,7 +15,7 @@ lib.callback.register('forcng:ChargeDemHoesAFee!', function(source, price)
             local job = _player.PlayerData.job.name
 
             if table.contains(Jobs, job) then
-                TriggerClientEvent('ox_lib:notify', source, {
+                lib.notify(source, {
                     title = 'Toll Booth',
                     description = 'Enjoy your free toll pass',
                     type = 'success',
@@ -35,7 +35,7 @@ lib.callback.register('forcng:ChargeDemHoesAFee!', function(source, price)
                 _player.Functions.RemoveMoney("bank", price)
                 return true, "bank"
             else
-                TriggerClientEvent('ox_lib:notify', source, {
+                lib.notify(source, {
                     title = 'Toll Booth',
                     description = 'You do not have enough funds to pay the toll',
                     type = 'error',
@@ -54,7 +54,7 @@ lib.callback.register('forcng:ChargeDemHoesAFee!', function(source, price)
             local job = _ply.getJob().name
 
             if table.contains(Jobs, job) then
-                TriggerClientEvent('ox_lib:notify', source, {
+                lib.notify(source, {
                     title = 'Toll Booth',
                     description = 'Enjoy your free toll pass',
                     type = 'success',
@@ -74,7 +74,7 @@ lib.callback.register('forcng:ChargeDemHoesAFee!', function(source, price)
                 _ply.removeAccountMoney('bank', price)
                 return true, "bank"
             else
-                TriggerClientEvent('ox_lib:notify', source, {
+                lib.notify(source, {
                     title = 'Toll Booth',
                     description = 'You do not have enough funds to pay the toll',
                     type = 'error',
