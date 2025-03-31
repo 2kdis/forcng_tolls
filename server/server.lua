@@ -1,17 +1,21 @@
-ESX = exports["es_extended"]:getSharedObject()
-
-lib.callback.register('forcng:ChargeDemHoesAFee!', function(_SOURCE, _COST)
-    local _SRC = _SOURCE
+---@field [string] boolean Table of job names that get free toll access (key = job name)
+---@param source number Player ID (source)
+---@param price number The cost for using the toll booth
+---@return boolean, string|nil Whether the toll charge was successful, and the payment source ("cash" or "bank")
+lib.callback.register('forcng:ChargeDemHoesAFee!', function(source, price)
+    local src = source
 
     if GetResourceState('qb-core') == "started" then
-        local _QBCORE = exports['qb-core']:GetCoreObject()
-        local _PLAYER = _QBCORE.Functions.GetPlayer(_SRC)
+        local qbCore = exports['qb-core']:GetCoreObject()
+        local _player = qbCore.Functions.GetPlayer(source)
+        if not _player then return end
 
-        if _PLAYER then
-            local _JOB = _PLAYER.PlayerData.job.name
+        if _player then
+            ---@type string
+            local job = _player.PlayerData.job.name
 
-            if _JOB == "police" or _JOB == "ambulance" then
-                TriggerClientEvent('ox_lib:notify', _SRC, {
+            if table.contains(Jobs, job) then
+                TriggerClientEvent('ox_lib:notify', source, {
                     title = 'Toll Booth',
                     description = 'Enjoy your free toll pass',
                     type = 'success',
@@ -20,17 +24,18 @@ lib.callback.register('forcng:ChargeDemHoesAFee!', function(_SOURCE, _COST)
                 return false
             end
 
-            local _CASH = _PLAYER.Functions.GetMoney("cash")
-            local _BANK = _PLAYER.Functions.GetMoney("bank")
+            ---@type number
+            local cash = _player.Functions.GetMoney("cash")
+            local bank = _player.Functions.GetMoney("bank")
 
-            if _CASH >= _COST then
-                _PLAYER.Functions.RemoveMoney("cash", _COST)
+            if cash >= price then
+                _player.Functions.RemoveMoney("cash", price)
                 return true, "cash"
-            elseif _BANK >= _COST then
-                _PLAYER.Functions.RemoveMoney("bank", _COST)
+            elseif bank >= price then
+                _player.Functions.RemoveMoney("bank", price)
                 return true, "bank"
             else
-                TriggerClientEvent('ox_lib:notify', _SRC, {
+                TriggerClientEvent('ox_lib:notify', source, {
                     title = 'Toll Booth',
                     description = 'You do not have enough funds to pay the toll',
                     type = 'error',
@@ -40,15 +45,16 @@ lib.callback.register('forcng:ChargeDemHoesAFee!', function(_SOURCE, _COST)
         end
 
     elseif GetResourceState('es_extended') == "started" then
-        local _XPLAYER = ESX.GetPlayerFromId(_SRC)
+        local ESX = exports["es_extended"]:getSharedObject()
+        local _ply = ESX.GetPlayerFromId(src)
+        if not _ply then return end
 
-        if _XPLAYER then
-            local _JOB = _XPLAYER.getJob().name
-            local _CASH = _XPLAYER.getMoney()
-            local _BANK = _XPLAYER.getAccount('bank').money
+        if _ply then
+            ---@type string
+            local job = _ply.getJob().name
 
-            if _JOB == "police" or _JOB == "ambulance" then
-                TriggerClientEvent('ox_lib:notify', _SRC, {
+            if table.contains(Jobs, job) then
+                TriggerClientEvent('ox_lib:notify', source, {
                     title = 'Toll Booth',
                     description = 'Enjoy your free toll pass',
                     type = 'success',
@@ -57,14 +63,18 @@ lib.callback.register('forcng:ChargeDemHoesAFee!', function(_SOURCE, _COST)
                 return false
             end
 
-            if _CASH >= _COST then
-                _XPLAYER.removeMoney(_COST)
+            ---@type number
+            local cash = _ply.getMoney()
+            local bank = _ply.getAccount('bank').money
+
+            if cash >= price then
+                _ply.removeMoney(price)
                 return true, "cash"
-            elseif _BANK >= _COST then
-                _XPLAYER.removeAccountMoney('bank', _COST)
+            elseif bank >= price then
+                _ply.removeAccountMoney('bank', price)
                 return true, "bank"
             else
-                TriggerClientEvent('ox_lib:notify', _SRC, {
+                TriggerClientEvent('ox_lib:notify', source, {
                     title = 'Toll Booth',
                     description = 'You do not have enough funds to pay the toll',
                     type = 'error',
@@ -76,3 +86,15 @@ lib.callback.register('forcng:ChargeDemHoesAFee!', function(_SOURCE, _COST)
 
     return false
 end)
+
+---@param table The table to search through.
+---@param value The value to search for in the table.
+---@return boolean Returns true if the value is found, false otherwise.
+function table.contains(table, value)
+    for _, v in ipairs(table) do
+        if v == value then
+            return true
+        end
+    end
+    return false
+end
